@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedLab Pro - Enhanced Laboratory Management System</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Loading Laboratory System...</p>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-flask"></i>
+                    <h2>MedLab Pro</h2>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#" data-section="dashboard" class="nav-link active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#" data-section="patients" class="nav-link"><i class="fas fa-users"></i> Patients</a></li>
+                    <li><a href="#" data-section="doctors" class="nav-link"><i class="fas fa-user-md"></i> Doctors</a></li>
+                    <li><a href="#" data-section="tests" class="nav-link"><i class="fas fa-vial"></i> Test Config</a></li>
+                    <li><a href="#" data-section="samples" class="nav-link"><i class="fas fa-microscope"></i> Samples</a></li>
+                    <li><a href="#" data-section="reports" class="nav-link"><i class="fas fa-file-medical"></i> Reports</a></li>
+                    <li><a href="#" data-section="receipts" class="nav-link"><i class="fas fa-receipt"></i> Receipts</a></li>
+                    <li><a href="#" data-section="communication" class="nav-link"><i class="fas fa-paper-plane"></i> Communication</a></li>
+                    <li><a href="#" data-section="data-management" class="nav-link"><i class="fas fa-database"></i> Data Management</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-content">
+                    <h1 id="page-title">Dashboard</h1>
+                    <div class="header-actions">
+                        <div class="doctor-filter">
+                            <label for="doctorFilter">Filter by Doctor:</label>
+                            <select id="doctorFilter" class="form-control">
+                                <option value="">All Doctors</option>
+                            </select>
+                        </div>
+                        <span class="current-date" id="currentDate"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-users"></i></div>
+                        <div class="stat-content">
+                            <h3 id="totalPatients">0</h3>
+                            <p>Total Patients Today</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-vial"></i></div>
+                        <div class="stat-content">
+                            <h3 id="testsCompleted">0</h3>
+                            <p>Tests Completed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                        <div class="stat-content">
+                            <h3 id="pendingReports">0</h3>
+                            <p>Pending Reports</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-rupee-sign"></i></div>
+                        <div class="stat-content">
+                            <h3 id="todayRevenue">₹0</h3>
+                            <p>Today's Revenue</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-charts">
+                    <div class="chart-container">
+                        <h3>Daily Test Volume</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="testVolumeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Doctor Referral Distribution</h3>
+                        <div style="position: relative; height: 300px;">
+                            <canvas id="doctorReferralChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="activityList">
+                        <!-- Activity items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Patients Section -->
+            <section id="patients" class="content-section">
+                <div class="section-header">
+                    <button class="btn btn--primary" id="addPatientBtn"><i class="fas fa-plus"></i> Add New Patient</button>
+                    <div class="search-box">
+                        <input type="text" id="patientSearch" class="form-control" placeholder="Search patients...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="patientsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Age/Gender</th>
+                                <th>Contact</th>
+                                <th>PID</th>
+                                <th>Referring Doctor</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientsTableBody">
+                            <!-- Patient rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Doctors Section -->
+            <section id="doctors" class="content-section">
+                <div class="section-header">
+                    <button class="btn btn--primary" id="addDoctorBtn"><i class="fas fa-plus"></i> Add New Doctor</button>
+                    <div class="search-box">
+                        <input type="text" id="doctorSearch" class="form-control" placeholder="Search doctors...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="doctorsTable">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Qualification</th>
+                                <th>Title</th>
+                                <th>RMC No</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorsTableBody">
+                            <!-- Doctor rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tests Section -->
+            <section id="tests" class="content-section">
+                <div class="section-header">
+                    <button class="btn btn--primary" id="addTestBtn"><i class="fas fa-plus"></i> Add New Test</button>
+                    <div class="search-box">
+                        <input type="text" id="testSearch" class="form-control" placeholder="Search tests...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="testsTable">
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                                <th>Department</th>
+                                <th>Price (₹)</th>
+                                <th>Components</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="testsTableBody">
+                            <!-- Test rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Samples Section -->
+            <section id="samples" class="content-section">
+                <div class="section-header">
+                    <button class="btn btn--primary" id="addSampleBtn"><i class="fas fa-plus"></i> Register New Sample</button>
+                    <div class="search-box">
+                        <input type="text" id="sampleSearch" class="form-control" placeholder="Search samples...">
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="samplesTable">
+                        <thead>
+                            <tr>
+                                <th>Sample ID</th>
+                                <th>Patient</th>
+                                <th>Tests</th>
+                                <th>Collection Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="samplesTableBody">
+                            <!-- Sample rows will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="content-section">
+                <div class="section-header">
+                    <h3>Generated Reports</h3>
+                    <div class="search-box">
+                        <input type="text" id="reportSearch" class="form-control" placeholder="Search reports...">
+                    </div>
+                </div>
+                <div class="reports-grid" id="reportsGrid">
+                    <!-- Report cards will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Receipts Section -->
+            <section id="receipts" class="content-section">
+                <div class="section-header">
+                    <button class="btn btn--primary" id="generateReceiptBtn"><i class="fas fa-plus"></i> Generate Receipt</button>
+                    <div class="search-box">
+                        <input type="text" id="receiptSearch" class="form-control" placeholder="Search receipts...">
+                    </div>
+                </div>
+                <div class="receipts-grid" id="receiptsGrid">
+                    <!-- Receipt cards will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Communication Section -->
+            <section id="communication" class="content-section">
+                <div class="communication-options">
+                    <div class="comm-card">
+                        <h3><i class="fab fa-whatsapp"></i> WhatsApp Notifications</h3>
+                        <p>Send reports and updates via WhatsApp</p>
+                        <button class="btn btn--primary" id="whatsappBtn">Send WhatsApp Message</button>
+                    </div>
+                    <div class="comm-card">
+                        <h3><i class="fas fa-envelope"></i> Email Reports</h3>
+                        <p>Send reports and receipts via email</p>
+                        <button class="btn btn--primary" id="emailBtn">Send Email</button>
+                    </div>
+                </div>
+                <div class="message-history">
+                    <h3>Communication History</h3>
+                    <div class="message-list" id="messageList">
+                        <!-- Message history will be populated by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Data Management Section -->
+            <section id="data-management" class="content-section">
+                <div class="data-management-grid">
+                    <div class="data-card">
+                        <h3><i class="fas fa-download"></i> Export Data</h3>
+                        <p>Export all laboratory data to share across network</p>
+                        <button class="btn btn--primary" id="exportDataBtn">Export to JSON</button>
+                    </div>
+                    <div class="data-card">
+                        <h3><i class="fas fa-upload"></i> Import Data</h3>
+                        <p>Import data from another system or backup</p>
+                        <input type="file" id="importFileInput" accept=".json" class="hidden">
+                        <button class="btn btn--secondary" id="importDataBtn">Import from JSON</button>
+                    </div>
+                    <div class="data-card">
+                        <h3><i class="fas fa-shield-alt"></i> Backup Data</h3>
+                        <p>Create automatic backup of all system data</p>
+                        <button class="btn btn--primary" id="backupDataBtn">Create Backup</button>
+                    </div>
+                    <div class="data-card">
+                        <h3><i class="fas fa-sync"></i> Data Status</h3>
+                        <p id="dataStatusText">Data automatically saved to IndexedDB</p>
+                        <div class="data-stats">
+                            <p><strong>Patients:</strong> <span id="patientCount">0</span></p>
+                            <p><strong>Doctors:</strong> <span id="doctorCount">0</span></p>
+                            <p><strong>Tests:</strong> <span id="testCount">0</span></p>
+                            <p><strong>Samples:</strong> <span id="sampleCount">0</span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="data-instructions">
+                    <h3>Network Data Sharing Instructions</h3>
+                    <ol>
+                        <li>Export data using "Export to JSON" button</li>
+                        <li>Save the downloaded JSON file to a shared network location</li>
+                        <li>On other computers, use "Import from JSON" to load the shared data</li>
+                        <li>All data will be synchronized across the network</li>
+                        <li>Create regular backups for data safety</li>
+                    </ol>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Patient Form -->
+    <div id="patientModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="patientModalTitle">Add New Patient</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="patientForm">
+                <div class="form-group">
+                    <label class="form-label">Name *</label>
+                    <input type="text" id="patientName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Age *</label>
+                    <input type="number" id="patientAge" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Gender *</label>
+                    <select id="patientGender" class="form-control" required>
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact *</label>
+                    <input type="tel" id="patientContact" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <textarea id="patientAddress" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Ref. ID</label>
+                    <input type="text" id="patientRefId" class="form-control" placeholder="e.g., SELF, DR001">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Org. ID</label>
+                    <input type="text" id="patientOrgId" class="form-control" placeholder="e.g., Dcs Hospital">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">PID</label>
+                    <input type="text" id="patientPid" class="form-control" placeholder="Patient ID">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Referring Doctor *</label>
+                    <select id="patientReferringDoctor" class="form-control" required>
+                        <option value="">Select Doctor</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancelPatientBtn">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Save Patient</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Doctor Form -->
+    <div id="doctorModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="doctorModalTitle">Add New Doctor</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="doctorForm">
+                <div class="form-group">
+                    <label class="form-label">Name *</label>
+                    <input type="text" id="doctorName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Specialty *</label>
+                    <input type="text" id="doctorSpecialty" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Qualification *</label>
+                    <input type="text" id="doctorQualification" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Title *</label>
+                    <input type="text" id="doctorTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">RMC No *</label>
+                    <input type="text" id="doctorRmcNo" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Clinic/Hospital *</label>
+                    <input type="text" id="doctorClinic" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Contact *</label>
+                    <input type="tel" id="doctorContact" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input type="email" id="doctorEmail" class="form-control" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancelDoctorBtn">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Save Doctor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Test Form -->
+    <div id="testModal" class="modal hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="testModalTitle">Add New Test</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="testForm">
+                <div class="form-group">
+                    <label class="form-label">Test Name *</label>
+                    <input type="text" id="testName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Department *</label>
+                    <select id="testDepartment" class="form-control" required>
+                        <option value="">Select Department</option>
+                        <option value="PATHOLOGY">PATHOLOGY</option>
+                        <option value="CLINICAL BIOCHEMISTRY">CLINICAL BIOCHEMISTRY</option>
+                        <option value="CLINICAL MICROBIOLOGY">CLINICAL MICROBIOLOGY</option>
+                        <option value="HEMATOLOGY">HEMATOLOGY</option>
+                        <option value="SEROLOGY">SEROLOGY</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price (₹) *</label>
+                    <input type="number" id="testPrice" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Test Components</label>
+                    <div id="testComponentsContainer">
+                        <button type="button" class="btn btn--secondary btn--sm" id="addComponentBtn">
+                            <i class="fas fa-plus"></i> Add Component
+                        </button>
+                        <div id="componentsList">
+                            <!-- Components will be added dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancelTestBtn">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Save Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Sample Form -->
+    <div id="sampleModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="sampleModalTitle">Register New Sample</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="sampleForm">
+                <div class="form-group">
+                    <label class="form-label">Patient *</label>
+                    <select id="samplePatient" class="form-control" required>
+                        <option value="">Select Patient</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tests *</label>
+                    <div id="testCheckboxes" class="checkbox-group">
+                        <!-- Test checkboxes will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Collection Date *</label>
+                    <input type="date" id="sampleCollectionDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Appointment No</label>
+                    <input type="text" id="sampleAppointmentNo" class="form-control">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancelSampleBtn">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Register Sample</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Report Generation -->
+    <div id="reportModal" class="modal hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Laboratory Report</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="reportContent" class="report-content">
+                <!-- Report content will be populated by JavaScript -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn--secondary" id="closeReportBtn">Close</button>
+                <button type="button" class="btn btn--primary" id="printReportBtn"><i class="fas fa-print"></i> Print</button>
+                <button type="button" class="btn btn--primary" id="emailReportBtn"><i class="fas fa-envelope"></i> Email</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Sample Results Input -->
+    <div id="resultsModal" class="modal hidden">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Enter Test Results</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="resultsFormContainer">
+                <!-- Results form will be populated by JavaScript -->
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn--secondary" id="cancelResultsBtn">Cancel</button>
+                <button type="button" class="btn btn--primary" id="saveResultsBtn">Save Results</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Communication -->
+    <div id="commModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="commModalTitle">Send Message</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="commForm">
+                <div class="form-group">
+                    <label class="form-label">Recipient *</label>
+                    <select id="commRecipient" class="form-control" required>
+                        <option value="">Select Recipient</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message Type *</label>
+                    <select id="commType" class="form-control" required>
+                        <option value="">Select Type</option>
+                        <option value="report">Send Report</option>
+                        <option value="receipt">Send Receipt</option>
+                        <option value="reminder">Send Reminder</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea id="commMessage" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn--secondary" id="cancelCommBtn">Cancel</button>
+                    <button type="submit" class="btn btn--primary" id="sendCommBtn">Send Message</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div id="receiptModal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Receipt</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div id="receiptContent" class="report-content">
+            </div>
+        <div class="form-actions">
+            <button type="button" class="btn btn--secondary" id="closeReceiptBtn">Close</button>
+            <button type="button" class="btn btn--primary" id="printReceiptBtn"><i class="fas fa-print"></i> Print</button>
+        </div>
+    </div>
+</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
