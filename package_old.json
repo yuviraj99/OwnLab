@@ -1,0 +1,27 @@
+{
+  "name": "medical-lab-management-system",
+  "version": "1.0.0",
+  "description": "Backend server for Medical Laboratory Management System",
+  "main": "medical_lab_server.js",
+  "scripts": {
+    "start": "node medical_lab_server.js",
+    "dev": "nodemon medical_lab_server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "medical",
+    "laboratory",
+    "management",
+    "system",
+    "lims"
+  ],
+  "author": "MedLab Pro",
+  "license": "MIT"
+}
