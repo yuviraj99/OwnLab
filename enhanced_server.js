@@ -471,7 +471,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`\n=== MedLab Pro Enhanced Server ===`);
   console.log(`Server running on port ${PORT}`);
   console.log(`Web Interface: http://localhost:${PORT}`);

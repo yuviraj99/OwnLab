@@ -432,7 +432,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`Medical Lab Management System Server running on port ${PORT}`);
   console.log(`Access the application at: http://localhost:${PORT}`);
   console.log(`API endpoints available at: http://localhost:${PORT}/api/`);
