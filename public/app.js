@@ -2,7 +2,7 @@
 // All buttons working: Reports, WhatsApp, Email, Receipt Generation
 
 // IndexedDB Configuration
-const DB_NAME = 'MedLabProDB';
+const DB_NAME = 'PardiyaLabDB';
 const DB_VERSION = 1;
 let db;
 
@@ -133,7 +133,7 @@ async function loadDataFromDB() {
     console.log('Data loaded from IndexedDB:', appData);
   } catch (error) {
     console.error('Error loading data from IndexedDB:', error);
-    await loadInitialData();
+    // await loadInitialData();
   }
 }
 
@@ -330,11 +330,11 @@ async function initializeApp() {
   try {
     await loadDataFromDB();
     if (appData.patients.length === 0) {
-      await loadInitialData();
+      // await loadInitialData();
     }
   } catch (error) {
     console.error('Failed to load data:', error);
-    await loadInitialData();
+    // await loadInitialData();
   }
   
   setupNavigation();
@@ -1202,21 +1202,39 @@ function generateReport(sampleId) {
                 <td>${component.name}</td>
                 <td class="${isAbnormal ? 'abnormal-value' : ''}">${result}</td>
                 <td>${component.units || '-'}</td>
-                <td>${component.referenceRange || '-'}</td>
+                <td>
+                ${component.referenceRange
+                              ? component.referenceRange.includes(';')
+                                ? component.referenceRange.split(';').join('<br>')
+                                : component.referenceRange
+                              : '-'}
+                  </td>
               </tr>
             `;
           });
+          
         }
+        
         
         reportHtml += `
               </tbody>
             </table>
           </div>
         `;
+        if (test.note && test.note.text) {
+  reportHtml += `
+    <div class="test-note">
+      <strong>${test.note.heading || 'Note'}:</strong><br>
+      <span>${test.note.text}</span>
+    </div>
+  `;
+}
       });
+      
       
       reportHtml += `</div>`;
     });
+    
     
     reportHtml += `
       <div class="report-footer">
@@ -1324,6 +1342,9 @@ function populateReceiptsGrid() {
         <button class="btn btn--sm btn--secondary" onclick="printReceipt('${receipt.id}')">
           <i class="fas fa-print"></i> Print
         </button>
+        <button class="btn btn--danger delete-receipt-btn" data-id="${receipt.id}">
+    <i class="fas fa-trash"></i> Delete
+  </button>
       </div>
     </div>
   `).join('');
@@ -1349,7 +1370,7 @@ function generateReceiptForSample(sample) {
   }).filter(Boolean);
 
   const subtotal = tests.reduce((sum, test) => sum + test.price, 0);
-  const gstRate = 18; // 18% GST
+  const gstRate = 0; // 18% GST
   const gstAmount = Math.round((subtotal * gstRate) / 100);
   const total = subtotal + gstAmount;
 
@@ -1429,7 +1450,6 @@ function showReceiptModal(receiptData) {
           <h4>Payment Details</h4>
           <p><strong>Date:</strong> ${formatDate(receiptData.date)}</p>
           <p><strong>Payment Method:</strong> ${receiptData.paymentMethod}</p>
-          <p><strong>GST No:</strong> ${appData.settings.lab.gstNumber || 'N/A'}</p>
         </div>
       </div>
 
@@ -1454,10 +1474,6 @@ function showReceiptModal(receiptData) {
         <div class="receipt-total-row">
           <span>Subtotal:</span>
           <span>₹${receiptData.subtotal.toLocaleString()}</span>
-        </div>
-        <div class="receipt-total-row">
-          <span>GST (${receiptData.gstRate}%):</span>
-          <span>₹${receiptData.gstAmount.toLocaleString()}</span>
         </div>
         <div class="receipt-total-row grand-total">
           <span>Total Amount:</span>
@@ -1540,6 +1556,9 @@ function populateSampleTable() {
               <button class="action-btn action-btn--edit" onclick="generateReport('${sample.id}')" title="Generate Report">
                 <i class="fas fa-file-medical"></i>
               </button>
+               <button class="btn btn--danger delete-sample-btn" data-id="${sample.id}">
+      <i class="fas fa-trash"></i> Delete
+    </button>
             `}
           </div>
         </td>
@@ -1771,8 +1790,9 @@ function editDoctor(id) {
   if (modal) modal.classList.remove('hidden');
 }
 
-function deleteDoctor(id) {
+async function deleteDoctor(id) {
   if (confirm('Are you sure you want to delete this doctor?')) {
+    await deleteFromStore('doctors', id);
     appData.doctors = appData.doctors.filter(d => d.id !== id);
     autoSave();
     populateDoctorTable();
@@ -1853,8 +1873,9 @@ function editPatient(id) {
   if (modal) modal.classList.remove('hidden');
 }
 
-function deletePatient(id) {
+async function deletePatient(id) {
   if (confirm('Are you sure you want to delete this patient?')) {
+    await deleteFromStore('patients', id);
     appData.patients = appData.patients.filter(p => p.id !== id);
     autoSave();
     populatePatientTable();
@@ -1986,13 +2007,16 @@ function editTest(id) {
       componentsList.appendChild(componentItem);
     });
   }
+  document.getElementById('noteHeading').value = test.note?.heading || '';
+document.getElementById('noteText').value = test.note?.text || '';
   
   const modal = document.getElementById('testModal');
   if (modal) modal.classList.remove('hidden');
 }
 
-function deleteTest(id) {
+async function deleteTest(id) {
   if (confirm('Are you sure you want to delete this test?')) {
+    await deleteFromStore('tests', id);
     appData.tests = appData.tests.filter(t => t.id !== id);
     autoSave();
     populateTestTable();
@@ -2017,14 +2041,25 @@ async function saveTest(formData) {
     if (testIndex !== -1) {
       appData.tests[testIndex] = {
         ...appData.tests[testIndex],
-        ...formData
+        ...formData,
+        note: {
+        heading: document.getElementById('noteHeading').value,
+        text: document.getElementById('noteText').value
+      }
       };
       showNotification('Test updated successfully', 'success');
     }
   } else {
     const newTest = {
       id: appData.nextTestId++,
-      ...formData
+      name: document.getElementById('testName').value,
+      department: document.getElementById('testDepartment').value,
+      price: parseFloat(document.getElementById('testPrice').value),
+      components: components,
+      note: {
+        heading: document.getElementById('noteHeading').value,
+        text: document.getElementById('noteText').value
+      }
     };
     appData.tests.push(newTest);
     showNotification('Test added successfully', 'success');
@@ -2493,6 +2528,41 @@ function setupDataManagement() {
       }
     });
   }
+  // Delete Sample
+document.addEventListener('click', async function(e) {
+  if (e.target.closest('.delete-sample-btn')) {
+    const id = e.target.closest('.delete-sample-btn').dataset.id;
+    if (confirm('Are you sure you want to delete this sample?')) {
+      await deleteFromStore('samples', id);
+      appData.samples = appData.samples.filter(s => s.id != id);
+      refreshAllData();
+      showNotification('Sample deleted successfully', 'success');
+    }
+  }
+
+  // Delete Receipt
+  if (e.target.closest('.delete-receipt-btn')) {
+    const id = e.target.closest('.delete-receipt-btn').dataset.id;
+    if (confirm('Are you sure you want to delete this receipt?')) {
+      await deleteFromStore('receipts', id);
+      appData.receipts = appData.receipts.filter(r => r.id != id);
+      refreshAllData();
+      showNotification('Receipt deleted successfully', 'success');
+    }
+  }
+
+  // Delete Report
+  if (e.target.closest('.delete-report-btn')) {
+    const id = e.target.closest('.delete-report-btn').dataset.id;
+    if (confirm('Are you sure you want to delete this report?')) {
+      await deleteFromStore('reports', id);
+      appData.reports = appData.reports.filter(r => r.id != id);
+      refreshAllData();
+      showNotification('Report deleted successfully', 'success');
+    }
+  }
+});
+
 }
 
 async function exportData() {

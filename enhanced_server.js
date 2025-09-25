@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Initialize SQLite Database
-const dbPath = path.join(__dirname, 'medical_lab.db');
+const dbPath = path.join(__dirname, 'PardiyaLabDB.db');
 const db = new sqlite3.Database(dbPath);
 
 // Email configuration (will be stored in database)
