@@ -5,6 +5,11 @@
 const DB_NAME = 'PardiyaLabDB';
 const DB_VERSION = 1;
 let db;
+// Hardcoded Pathologist Info
+const pathologistInfo = {
+  name: "Dr. M. Sanwalka",
+  qualification: "MD (Pathology)",
+};
 
 // Database Schema
 const STORES = {
@@ -1227,6 +1232,7 @@ function generateReport(sampleId) {
       <strong>${test.note.heading || 'Note'}:</strong><br>
       <span>${test.note.text}</span>
     </div>
+    <br><br><br>
   `;
 }
       });
@@ -1239,17 +1245,13 @@ function generateReport(sampleId) {
     reportHtml += `
       <div class="report-footer">
         <div class="end-of-report">*** End Of Report ***</div>
-        <div class="signature-section">
-          <div class="signature-block">
-            <div class="signature-line"></div>
-            <div class="signature-name">${doctor?.name || 'Dr. M. Sanwalka'}</div>
-            <div class="signature-details">
-              ${doctor?.qualification || 'MD (Pathology)'}<br>
-              ${doctor?.title || 'Consultant Pathologist'}<br>
-              RMC No: ${doctor?.rmcNo || '23809'}
-            </div>
-          </div>
-        </div>
+  <div class="report-signature">
+    
+    <img src="/pathSign.png" alt="Signature" class="signature-img">
+    <br>
+    <p><strong>${pathologistInfo.name}</strong><br>${pathologistInfo.qualification}</p>
+  </div>
+
       </div>
     `;
     

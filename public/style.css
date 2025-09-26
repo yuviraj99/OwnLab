@@ -2118,3 +2118,15 @@ select.form-control {
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
 }
+.report-signature {
+  margin-top: 30px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.signature-img {
+  max-height: 80px;
+  display: block;
+  margin-left: 85%;
+}
